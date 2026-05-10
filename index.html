@@ -3,161 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lua Deobfuscator — Web Tool</title>
-<script src="https://cdn.jsdelivr.net/npm/luaparse@0.3.1/luaparse.min.js"></script>
+<title>Web Deobfuscator — Giải mã script online</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:#0a0e17;color:#e0e0e0;min-height:100vh;overflow:hidden}
 .header{background:linear-gradient(135deg,#0d1b2a,#1b2838);border-bottom:1px solid #2a3a5c;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.header h1{font-size:20px;font-weight:700;background:linear-gradient(90deg,#4fc3f7,#00e676);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header h1{font-size:20px;font-weight:700;background:linear-gradient(90deg,#ff6b6b,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .header .sub{font-size:13px;color:#8899aa;margin-left:auto}
 .header .actions{display:flex;gap:8px;align-items:center}
 .btn{padding:6px 16px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-primary{background:linear-gradient(135deg,#4fc3f7,#00bcd4);color:#0a0e17}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(79,195,247,.3)}
+.btn-primary{background:linear-gradient(135deg,#ff6b6b,#ff8e53);color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(255,107,107,.3)}
 .btn-secondary{background:#1e2d42;color:#b0c4de;border:1px solid #2a3a5c}
 .btn-secondary:hover{background:#2a3d5a}
-.btn-danger{background:#ef5350;color:#fff}
-.btn-danger:hover{background:#e53935}
-.btn-success{background:#00e676;color:#0a0e17}
-.btn-success:hover{box-shadow:0 4px 20px rgba(0,230,118,.3)}
+.btn-success{background:#ffd93d;color:#0a0e17}
+.btn-success:hover{box-shadow:0 4px 20px rgba(255,217,61,.3)}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
 .container{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - 64px)}
 .panel{display:flex;flex-direction:column;min-height:0}
 .panel-left{border-right:1px solid #1e2d42}
 .panel-header{padding:8px 16px;border-bottom:1px solid #1e2d42;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:10px;background:#0d1117;flex-shrink:0}
 .panel-header .badge{padding:2px 8px;border-radius:10px;font-size:10px;background:#1e2d42;color:#8899aa}
-.panel-header .badge.active{background:#00e67622;color:#00e676;border:1px solid #00e67644}
-.panel-header .badge.warn{background:#ff980022;color:#ff9800;border:1px solid #ff980044}
-.panel-tabs{display:flex;gap:4px;margin-left:auto}
-.panel-tab{padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer;color:#6b7b8d;background:transparent;border:1px solid transparent;transition:all .2s}
-.panel-tab:hover{color:#b0c4de;background:#1a2538}
-.panel-tab.active{color:#4fc3f7;background:#1a2538;border-color:#4fc3f744}
+.panel-header .badge.active{background:#ffd93d22;color:#ffd93d;border:1px solid #ffd93d44}
+.panel-header .badge.warn{background:#ff6b6b22;color:#ff6b6b;border:1px solid #ff6b6b44}
 .editor-wrap{flex:1;position:relative;overflow:hidden}
 .editor-wrap textarea{width:100%;height:100%;resize:none;border:none;outline:none;background:#0a0e17;color:#e0e0e0;font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;font-size:13px;line-height:1.6;padding:16px;tab-size:4;overflow:auto}
 .editor-wrap textarea::placeholder{color:#3a4a5a}
-.editor-wrap .line-nums{position:absolute;left:0;top:0;padding:16px 8px 16px 12px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;line-height:1.6;color:#2a3a5c;text-align:right;user-select:none;overflow:hidden;pointer-events:none}
 .status-bar{display:flex;align-items:center;gap:12px;padding:5px 16px;border-top:1px solid #1e2d42;font-size:11px;color:#5a6a7a;background:#0d1117;flex-shrink:0}
 .status-bar .stat{display:flex;align-items:center;gap:4px}
 .status-bar .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
 .status-bar .dot.green{background:#00e676}
-.status-bar .dot.yellow{background:#ff9800}
-.status-bar .dot.red{background:#ef5350}
+.status-bar .dot.yellow{background:#ffd93d}
+.status-bar .dot.red{background:#ff6b6b}
 .options-bar{display:flex;flex-wrap:wrap;gap:6px;padding:6px 16px;border-bottom:1px solid #1e2d42;background:#0d1117;flex-shrink:0}
 .opt-check{display:flex;align-items:center;gap:5px;font-size:12px;color:#8899aa;cursor:pointer;padding:2px 8px;border-radius:4px;transition:all .2s}
 .opt-check:hover{background:#1a2538;color:#b0c4de}
-.opt-check input{accent-color:#4fc3f7;width:14px;height:14px;cursor:pointer}
-.opt-check.active{color:#b0c4de}
+.opt-check input{accent-color:#ff6b6b;width:14px;height:14px;cursor:pointer}
 .toast{position:fixed;bottom:24px;right:24px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:500;z-index:999;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:#00e676;color:#0a0e17;box-shadow:0 8px 32px rgba(0,230,118,.3)}
-.toast.error{background:#ef5350;color:#fff;box-shadow:0 8px 32px rgba(239,83,80,.3)}
+.toast.error{background:#ff6b6b;color:#fff;box-shadow:0 8px 32px rgba(255,107,107,.3)}
 .toast.info{background:#4fc3f7;color:#0a0e17;box-shadow:0 8px 32px rgba(79,195,247,.3)}
-
-/* Scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:#0a0e17}
 ::-webkit-scrollbar-thumb{background:#1e2d42;border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:#2a3a5c}
-
-/* Responsive */
 @media(max-width:768px){
   .container{grid-template-columns:1fr;height:auto;min-height:calc(100vh - 64px)}
   .panel-left{border-right:none;border-bottom:1px solid #1e2d42}
   .panel{min-height:50vh}
   .header .sub{display:none}
-  .options-bar{gap:4px}
-  .opt-check{font-size:11px;padding:2px 6px}
 }
-
-/* Skeleton loading */
-.skeleton{position:absolute;inset:0;background:linear-gradient(90deg,#0a0e17 25%,#111827 50%,#0a0e17 75%);background-size:200% 100%;animation:skeleton 1.5s infinite;display:none;z-index:5}
-.skeleton.active{display:block}
-@keyframes skeleton{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.detection-badges{display:flex;flex-wrap:wrap;gap:4px;padding:6px 16px;border-bottom:1px solid #1e2d42;background:#0d1117;flex-shrink:0}
+.det-badge{padding:2px 10px;border-radius:10px;font-size:10px;font-weight:500;border:1px solid transparent}
+.det-badge.hex{background:#4fc3f722;color:#4fc3f7;border-color:#4fc3f744}
+.det-badge.b64{background:#00e67622;color:#00e676;border-color:#00e67644}
+.det-badge.unicode{background:#ffd93d22;color:#ffd93d;border-color:#ffd93d44}
+.det-badge.eval{background:#ff6b6b22;color:#ff6b6b;border-color:#ff6b6b44}
+.det-badge.packed{background:#ab47bc22;color:#ce93d8;border-color:#ab47bc44}
+.det-badge.other{background:#5a6a7a22;color:#8899aa;border-color:#5a6a7a44}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>◈ Lua Deobfuscator</h1>
-  <span style="font-size:12px;color:#5a6a7a">v2.0 · Web Tool</span>
+  <h1>&#x25C6; Web Deobfuscator</h1>
+  <span style="font-size:12px;color:#5a6a7a">v1.0 &middot; Giải mã script web</span>
   <div class="sub">
-    <span id="versionBadge" style="padding:2px 10px;border-radius:10px;background:#1a2538;border:1px solid #2a3a5c;font-size:11px">Lua 5.1 · 5.2 · 5.3 · LuaJIT</span>
+    <span style="padding:2px 10px;border-radius:10px;background:#1a2538;border:1px solid #2a3a5c;font-size:11px">JS &middot; HTML &middot; CSS</span>
   </div>
   <div class="actions">
-    <button class="btn btn-secondary" onclick="loadSample()" title="Load sample obfuscated code">📄 Sample</button>
-    <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()" title="Upload .lua file">📂 Open</button>
-    <input type="file" id="fileInput" accept=".lua,.luac,.txt" style="display:none" onchange="handleFileUpload(event)">
-    <button class="btn btn-primary" id="deobfBtn" onclick="deobfuscate()">⚡ Deobfuscate</button>
-    <button class="btn btn-success" id="copyBtn" onclick="copyOutput()" disabled>📋 Copy</button>
+    <button class="btn btn-secondary" onclick="loadSample()">&#x1F4C4; Mẫu</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">&#x1F4C2; Mở file</button>
+    <input type="file" id="fileInput" accept=".js,.html,.htm,.txt" style="display:none" onchange="handleFileUpload(event)">
+    <button class="btn btn-primary" id="deobfBtn" onclick="deobfuscate()">&#x26A1; Giải mã</button>
+    <button class="btn btn-success" id="copyBtn" onclick="copyOutput()" disabled>&#x1F4CB; Copy</button>
   </div>
 </div>
 
 <div class="container">
-  <!-- Input Panel -->
   <div class="panel panel-left">
     <div class="panel-header">
-      <span>INPUT</span>
+      <span>INPUT &mdash; Mã bị obfuscate</span>
       <span class="badge" id="inputStat">idle</span>
-      <div class="panel-tabs">
-        <span class="panel-tab active" onclick="switchInputTab(this,'code')">Code</span>
-        <span class="panel-tab" onclick="switchInputTab(this,'ast')">AST</span>
-      </div>
     </div>
-    <div class="options-bar">
-      <label class="opt-check active">
-        <input type="checkbox" id="optRename" checked> Rename Vars
-      </label>
-      <label class="opt-check active">
-        <input type="checkbox" id="optDecodeStr" checked> Decode Strings
-      </label>
-      <label class="opt-check active">
-        <input type="checkbox" id="optCleanFlow" checked> Clean Flow
-      </label>
-      <label class="opt-check">
-        <input type="checkbox" id="optRemoveJunk"> Remove Junk
-      </label>
-      <label class="opt-check">
-        <input type="checkbox" id="optResolveExpr"> Resolve Expr
-      </label>
+    <div class="detection-badges" id="detectionArea">
+      <span style="font-size:10px;color:#5a6a7a;margin-right:4px">Phát hiện:</span>
+      <span class="det-badge other">Chưa phân tích</span>
     </div>
     <div class="editor-wrap">
-      <div class="skeleton" id="inputSkeleton"></div>
-      <textarea id="inputCode" placeholder="-- Paste your obfuscated Lua code here...
--- Or click 'Sample' to try an example
+      <textarea id="inputCode" placeholder="-- Dán mã obfuscated (JS/HTML/CSS) vào đây...
+-- Click 'M&#x1EAB;u' để thử với code mẫu
 
--- Example: local a=_G['\115\116\114\105\110\103'];local b=a['\98\121\116\101'];local c=b('\72\101\108\108\111')">-- Paste your obfuscated Lua code here...
--- Or click 'Sample' to try an example</textarea>
-      <div id="astView" style="display:none;width:100%;height:100%;overflow:auto;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#8899aa;background:#0a0e17;white-space:pre;line-height:1.5"></div>
+Ví d&#x1EE5;:
+eval(function(p,a,c,k,e,d){e=function(c){return c};...}))</textarea>
     </div>
     <div class="status-bar">
-      <span class="stat"><span class="dot yellow" id="inputDot"></span> <span id="inputStatus">Ready</span></span>
-      <span class="stat" id="inputChars">0 chars</span>
-      <span class="stat" id="inputLines">0 lines</span>
+      <span class="stat"><span class="dot yellow" id="inputDot"></span> <span id="inputStatus">Sẵn sàng</span></span>
+      <span class="stat" id="inputChars">0 ký tự</span>
+      <span class="stat" id="inputLines">0 dòng</span>
     </div>
   </div>
 
-  <!-- Output Panel -->
   <div class="panel panel-right">
     <div class="panel-header">
-      <span>OUTPUT</span>
-      <span class="badge" id="outputStat">waiting</span>
-      <div class="panel-tabs">
-        <span class="panel-tab active" onclick="switchOutputTab(this,'code')">Code</span>
-        <span class="panel-tab" onclick="switchOutputTab(this,'diff')">Diff</span>
-        <span class="panel-tab" onclick="switchOutputTab(this,'report')">Report</span>
-      </div>
+      <span>OUTPUT &mdash; Code đã giải mã</span>
+      <span class="badge" id="outputStat">chờ</span>
     </div>
     <div class="editor-wrap">
-      <div class="skeleton" id="outputSkeleton"></div>
-      <textarea id="outputCode" placeholder="Deobfuscated code will appear here..." readonly></textarea>
-      <div id="diffView" style="display:none;width:100%;height:100%;overflow:auto;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;background:#0a0e17"></div>
-      <div id="reportView" style="display:none;width:100%;height:100%;overflow:auto;padding:16px;font-family:system-ui,sans-serif;font-size:13px;line-height:1.6;background:#0a0e17;color:#b0c4de"></div>
+      <textarea id="outputCode" placeholder="Code sau khi giải mã sẽ hiển thị ở đây..." readonly></textarea>
     </div>
     <div class="status-bar">
-      <span class="stat"><span class="dot" id="outputDot"></span> <span id="outputStatus">Waiting for input</span></span>
-      <span class="stat" id="outputChars">0 chars</span>
-      <span class="stat" id="outputLines">0 lines</span>
+      <span class="stat"><span class="dot" id="outputDot"></span> <span id="outputStatus">Chờ input</span></span>
+      <span class="stat" id="outputChars">0 ký tự</span>
+      <span class="stat" id="outputLines">0 dòng</span>
       <span style="margin-left:auto;font-size:11px;color:#5a6a7a" id="perfInfo"></span>
     </div>
   </div>
@@ -167,455 +126,397 @@ body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background
 
 <script>
 // ============================================================
-// LUA DEOBFUSCATOR ENGINE
+// WEB DEOBFUSCATOR ENGINE v1.0
 // ============================================================
 
-// --- Utility ---
-function escapeRegExp(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
-function uuid(){return Math.random().toString(36).substr(2,9)}
-
-// --- Toast ---
 let toastTimer;
 function showToast(msg,type='success'){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast '+type;
   clearTimeout(toastTimer);
-  requestAnimationFrame(()=>{t.classList.add('show')});
+  requestAnimationFrame(()=>t.classList.add('show'));
   toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// --- Tab Switching ---
-function switchInputTab(el,tab){
-  document.querySelectorAll('.panel-left .panel-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  const code=document.getElementById('inputCode');
-  const ast=document.getElementById('astView');
-  if(tab==='code'){code.style.display='';ast.style.display='none'}
-  else{
-    code.style.display='none';ast.style.display='';
-    try{
-      const astData=luaparse.parse(document.getElementById('inputCode').value,{luaVersion:'5.1',comments:false,locations:false});
-      ast.textContent=JSON.stringify(astData,null,2);
-    }catch(e){ast.textContent='// AST Parse Error:\n'+e.message}
-  }
-}
-function switchOutputTab(el,tab){
-  document.querySelectorAll('.panel-right .panel-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('outputCode').style.display=tab==='code'?'':'none';
-  document.getElementById('diffView').style.display=tab==='diff'?'':'none';
-  document.getElementById('reportView').style.display=tab==='report'?'':'none';
-}
-
-// --- File Upload ---
 function handleFileUpload(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=function(ev){
     document.getElementById('inputCode').value=ev.target.result;
     updateInputStats();
-    showToast('Loaded: '+file.name,'info');
+    detectObfuscation();
+    showToast('Đã load: '+file.name,'info');
   };
   reader.readAsText(file);
   e.target.value='';
 }
 
-// --- Stats ---
 function updateInputStats(){
   const v=document.getElementById('inputCode').value;
-  document.getElementById('inputChars').textContent=v.length+' chars';
-  document.getElementById('inputLines').textContent=(v.split('\n').length)+' lines';
+  document.getElementById('inputChars').textContent=v.length+' ký tự';
+  document.getElementById('inputLines').textContent=(v.split('\n').length)+' dòng';
 }
-document.getElementById('inputCode').addEventListener('input',updateInputStats);
+document.getElementById('inputCode').addEventListener('input',()=>{updateInputStats();detectObfuscation();});
 updateInputStats();
 
-// --- Sample ---
-function loadSample(){
-  const samples=[
-`-- Sample 1: Hex-encoded strings + variable obfuscation
-local _0x1 = _G['\\115\\116\\114\\105\\110\\103']
-local _0x2 = _0x1['\\98\\121\\116\\101']
-local _0x3 = _0x1['\\99\\104\\97\\114']
+// ============================================================
+// PHÁT HIỆN KỸ THUẬT OBFUSCATION
+// ============================================================
 
-local _0x4 = {}
-_0x4[1] = _0x3(72) .. _0x3(101) .. _0x3(108) .. _0x3(108) .. _0x3(111)
-_0x4[2] = _0x3(87) .. _0x3(111) .. _0x3(114) .. _0x3(108) .. _0x3(100)
-
-local function _0x5(_0x6)
-  local _0x7 = ""
-  for _0x8 = 1, #_0x6 do
-    _0x7 = _0x7 .. _0x3(_0x6:byte(_0x8) + 1)
-  end
-  return _0x7
-end
-
-print(_0x4[1] .. ", " .. _0x4[2] .. "!")
-print("Encoded: " .. _0x5("Hello"))`,
-
-`-- Sample 2: Control flow + junk code
-local a=1;local b=2;local c=3
-local d={}
-d[1]=function(x)return x+1 end
-d[2]=function(x)return x*2 end
-d[3]=function(x)return x-3 end
-local e=true
-if a<b then
-  local _=a+b;local __=a*b
-  if e then
-    for i=1,5 do
-      local junk="dead code"
-      local morejunk=function()return 42 end
-      print("step",i,d[1](i))
-    end
-  end
-  local _x=a+c;local _y=b*c
-else
-  print("unreachable")
-end
-local f={}
-for k=1,10 do
-  local tmp=k*2
-  f[k]=function(n)return n+tmp end
-end
-print(f[3](5))`,
-
-`-- Sample 3: Table-based string lookups
-local S = {
-  ["\\x48\\x65\\x6c\\x6c\\x6f"] = true,
-  ["\\x57\\x6f\\x72\\x6c\\x64"] = true,
-  ["\\x54\\x65\\x73\\x74"] = true
-}
-local keys = {}
-for k in pairs(S) do keys[#keys+1] = k end
-local function decode(str)
-  local out = ""
-  for i = 1, #str do
-    local c = str:sub(i,i)
-    if c == "\\\\" then
-      local hex = str:sub(i+2,i+3)
-      out = out .. string.char(tonumber(hex, 16))
-      i = i + 3
-    else
-      out = out .. c
-    end
-  end
-  return out
-end
-for i=1,#keys do
-  print(decode(keys[i]))
-end`
-  ];
-  const current=document.getElementById('inputCode').value.trim();
-  const idx=current&&current!==document.getElementById('inputCode').placeholder?Math.floor(Math.random()*samples.length):0;
-  document.getElementById('inputCode').value=samples[idx];
-  updateInputStats();
-  showToast('Sample '+(idx+1)+' loaded','info');
+function detectObfuscation(){
+  const code=document.getElementById('inputCode').value;
+  const area=document.getElementById('detectionArea');
+  let badges=[];
+  
+  // Làm sạch area cũ
+  area.innerHTML='<span style="font-size:10px;color:#5a6a7a;margin-right:4px">Phát hiện:</span>';
+  
+  if(!code.trim()){area.innerHTML+='<span class="det-badge other">Chưa có code</span>';return}
+  
+  // Kiểm tra packed JS (eval(function...))
+  if(/eval\s*\(/.test(code)&&/function\s*\(p,a,c,k,e,d\)/.test(code)){
+    badges.push({type:'eval',label:'Packed JS (eval)'});
+  }
+  // Kiểm tra eval thuần
+  if(/eval\s*\(/.test(code)&&!/function\s*\(p,a,c,k,e,d\)/.test(code)){
+    badges.push({type:'eval',label:'eval()'});
+  }
+  // Base64
+  const b64matches=code.match(/[A-Za-z0-9+/]{40,}={0,2}/g);
+  if(b64Matches&&b64Matches.length>0){
+    // Thử decode xem có ra text không
+    let b64Count=0;
+    for(let m of b64Matches){
+      try{
+        const decoded=atob(m);
+        if(decoded.length>10&&/[a-zA-Z]{5,}/.test(decoded))b64Count++;
+      }catch(e){}
+    }
+    if(b64Count>0)badges.push({type:'b64',label:'Base64'});
+  }
+  // Hex escapes trong string
+  if(/\\x[0-9a-f]{2}/i.test(code)){
+    // Đếm số lượng hex escape
+    const hexMatches=code.match(/\\x[0-9a-f]{2}/gi);
+    if(hexMatches&&hexMatches.length>5)badges.push({type:'hex',label:'Hex escape ('+hexMatches.length+')'});
+  }
+  // Unicode escapes
+  if(/\\u[0-9a-f]{4}/i.test(code)){
+    const uniMatches=code.match(/\\u[0-9a-f]{4}/gi);
+    if(uniMatches&&uniMatches.length>3)badges.push({type:'unicode',label:'Unicode \\u ('+uniMatches.length+')'});
+  }
+  // HTML entities
+  if(/&#x?[0-9a-f]+;/i.test(code)){
+    badges.push({type:'other',label:'HTML entities'});
+  }
+  // String concatenation obfuscation
+  const concatMatches=code.match(/['"][^'"]{1,3}['"]\s*\+\s*['"][^'"]{1,3}['"]/g);
+  if(concatMatches&&concatMatches.length>3){
+    badges.push({type:'other',label:'Ghép chuỗi ('+concatMatches.length+')'});
+  }
+  // Nested function calls
+  const nestedFn=code.match(/\w+\([\w,]+\(/g);
+  if(nestedFn&&nestedFn.length>5){
+    badges.push({type:'other',label:'Function lồng nhau'});
+  }
+  // Check for atob / btoa usage
+  if(/atob\s*\(/.test(code))badges.push({type:'b64',label:'atob()'});
+  
+  if(badges.length===0){
+    area.innerHTML+='<span class="det-badge other">Không phát hiện obfuscation</span>';
+    document.getElementById('inputStat').textContent='sạch';
+    document.getElementById('inputStat').className='badge';
+    return;
+  }
+  
+  document.getElementById('inputStat').textContent='phát hiện '+badges.length;
+  document.getElementById('inputStat').className='badge warn';
+  
+  for(let b of badges){
+    area.innerHTML+='<span class="det-badge '+b.type+'">'+b.label+'</span>';
+  }
 }
 
 // ============================================================
-// CORE DEOBFUSCATION ENGINE
+// MẪU CODE OBFUSCATED
+// ============================================================
+
+function loadSample(){
+  const samples=[
+`// Mẫu 1: Packed JS (dạng eval(function(p,a,c,k,e,d)))
+eval(function(p,a,c,k,e,d){e=function(c){return c.toString(36)};if(!''.replace(/^/,String)){while(c--){d[c.toString(a)]=k[c]||c.toString(a)}k=[function(e){return d[e]}];e=function(){return'\\\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\\\b'+e(c)+'\\\\b','g'),k[c])}}return p}('6 0=4.1("9");0.2="8";0.3="7";4.5.6(0)',16,16,'script|createElement|src|async|document|body|appendChild|true|https://example.com/tracker.js|script'.split('|'),0,{}))`,
+
+`// Mẫu 2: Hex + Unicode escapes
+var \\u0061\\u006c\\u0065\\u0072\\u0074 = \\x61\\x6c\\x65\\x72\\x74;
+var \\u006d\\u0073\\u0067 = \\x48\\x65\\x6c\\x6c\\x6f\\x20\\x57\\x6f\\x72\\x6c\\x64;
+window[\\u0061\\u006c\\u0065\\u0072\\u0074](\\u006d\\u0073\\u0067);
+
+var email = '\\x75\\x73\\x65\\x72\\x40\\x65\\x78\\x61\\x6d\\x70\\x6c\\x65\\x2e\\x63\\x6f\\x6d';
+var api_key = '\\x73\\x6b\\x5f\\x6c\\x69\\x76\\x65\\x5f\\x61\\x42\\x43\\x44\\x45\\x46\\x47\\x48\\x49\\x4a\\x4b\\x4c\\x4d\\x4e';`,
+
+`// Mẫu 3: Base64 + eval
+eval(atob("ZG9jdW1lbnQud3JpdGUoIjxzdHlsZT4uY29udGFpbmVyIHt3aWR0aDoxMDAlO2hlaWdodDoxMDB2aDtiYWNrZ3JvdW5kOiMwMDA7fTwvc3R5bGU+Iik="));
+
+var _0x1a2b = atob("ZnVuY3Rpb24gZ3JlZXQobmFtZSkge2NvbnNvbGUubG9nKCJIZWxsbywgIiArIG5hbWUpO30=");
+eval(_0x1a2b);
+greet("World");
+
+// Nested base64
+var x = atob("Y".repeat(0) + "XZhbChhdG9iKCJIZWxsbyIpKQ==");
+eval(x);`,
+
+`// Mẫu 4: Ghép chuỗi + HTML entities + function lồng nhau
+var _ = "&#104;&#116;&#116;&#112;&#115;";
+var __ = "&#58;&#47;&#47;";
+var ___ = "&#101;&#120;&#97;&#109;&#112;&#108;&#101;";
+var ____ = "&#46;&#99;&#111;&#109;";
+
+var url = _ + __ + ___ + ____;
+var el = document.createElement("a");
+el.href = url;
+el.textContent = "Click here";
+document.body.appendChild(el);
+
+// String concatenation obfuscation
+var api = "h"+"t"+"t"+"p"+"s"+":"+"/"+"/"+"a"+"p"+"i"+"."+"e"+"x"+"a"+"m"+"p"+"l"+"e"+"."+"c"+"o"+"m";
+var key = "s"+"k"+"_"+"l"+"i"+"v"+"e"+"_"+"x"+"Y"+"Z"+"1"+"2"+"3";
+console.log(api + "?key=" + key);`
+  ];
+  
+  const idx=Math.floor(Math.random()*samples.length);
+  document.getElementById('inputCode').value=samples[idx];
+  updateInputStats();
+  detectObfuscation();
+  showToast('Đã load mẫu '+(idx+1),'info');
+}
+
+// ============================================================
+// ENGINE GIẢI MÃ CHÍNH
 // ============================================================
 
 function deobfuscate(){
   const btn=document.getElementById('deobfBtn');
   const input=document.getElementById('inputCode').value.trim();
-  if(!input){showToast('Please enter Lua code first','error');return}
+  if(!input){showToast('Vui lòng nhập code cần giải mã','error');return}
   
-  btn.disabled=true;btn.textContent='⏳ Processing...';
-  document.getElementById('inputSkeleton').classList.add('active');
-  document.getElementById('outputSkeleton').classList.add('active');
+  btn.disabled=true;btn.textContent='⏳ Đang xử lý...';
   document.getElementById('outputDot').className='dot yellow';
-  document.getElementById('outputStatus').textContent='Processing...';
+  document.getElementById('outputStatus').textContent='Đang giải mã...';
   document.getElementById('perfInfo').textContent='';
-  
-  const opts={
-    rename: document.getElementById('optRename').checked,
-    decodeStr: document.getElementById('optDecodeStr').checked,
-    cleanFlow: document.getElementById('optCleanFlow').checked,
-    removeJunk: document.getElementById('optRemoveJunk').checked,
-    resolveExpr: document.getElementById('optResolveExpr').checked,
-  };
+  document.getElementById('outputStat').textContent='đang chạy';
+  document.getElementById('outputStat').className='badge warn';
   
   setTimeout(()=>{
     try{
       const start=performance.now();
-      const result=deobfuscateLua(input,opts);
+      const result=deobfuscateWeb(input);
       const elapsed=((performance.now()-start)).toFixed(1);
       
       document.getElementById('outputCode').value=result.code;
-      document.getElementById('outputChars').textContent=result.code.length+' chars';
-      document.getElementById('outputLines').textContent=(result.code.split('\n').length)+' lines';
-      
-      // Build diff view
-      buildDiffView(input,result.code);
-      
-      // Build report
-      buildReport(result.report,elapsed);
+      document.getElementById('outputChars').textContent=result.code.length+' ký tự';
+      document.getElementById('outputLines').textContent=(result.code.split('\n').length)+' dòng';
       
       document.getElementById('outputDot').className='dot green';
-      document.getElementById('outputStatus').textContent='Deobfuscated';
+      document.getElementById('outputStatus').textContent='Đã giải mã';
       document.getElementById('perfInfo').textContent='⏱ '+elapsed+'ms';
-      document.getElementById('outputStat').textContent='done';
+      document.getElementById('outputStat').textContent='hoàn tất';
       document.getElementById('outputStat').className='badge active';
       document.getElementById('copyBtn').disabled=false;
       
-      showToast(`Deobfuscated in ${elapsed}ms — ${result.report.transformations} transformations applied`,'success');
+      showToast('✅ Đã giải mã xong — '+result.transformations+' bước xử lý','success');
     }catch(e){
-      document.getElementById('outputCode').value='-- ERROR: '+e.message;
+      document.getElementById('outputCode').value='// LỖI: '+e.message+'\n// '+e.stack;
       document.getElementById('outputDot').className='dot red';
-      document.getElementById('outputStatus').textContent='Error: '+e.message;
-      document.getElementById('outputStat').textContent='error';
+      document.getElementById('outputStatus').textContent='Lỗi: '+e.message;
+      document.getElementById('outputStat').textContent='lỗi';
       document.getElementById('outputStat').className='badge warn';
-      showToast('Error: '+e.message,'error');
+      showToast('❌ Lỗi: '+e.message,'error');
     }finally{
-      btn.disabled=false;btn.textContent='⚡ Deobfuscate';
-      document.getElementById('inputSkeleton').classList.remove('active');
-      document.getElementById('outputSkeleton').classList.remove('active');
+      btn.disabled=false;btn.textContent='⚡ Giải mã';
     }
   },100);
 }
 
-function deobfuscateLua(code,opts){
+function deobfuscateWeb(code){
   let result=code;
-  const report={transformations:0,details:[]};
+  const log=[];
+  let transformations=0;
   
-  // Step 1: Decode hex escapes (\x48\x65 etc.)
-  if(opts.decodeStr){
-    const before=result;
-    result=result.replace(/\\x([0-9a-fA-F]{2})/g,(m,h)=>String.fromCharCode(parseInt(h,16)));
-    if(result!==before){
-      const count=(result.match(/[^\x00-\x7F]/g)||[]).length;
-      report.transformations++;
-      report.details.push('Decoded \\xXX hex escapes');
-    }
+  // === Bước 1: Giải mã HTML entities ===
+  const before1=result;
+  result=result.replace(/&#(\d+);/g,(m,n)=>String.fromCharCode(parseInt(n,10)));
+  result=result.replace(/&#x([0-9a-f]+);/gi,(m,h)=>String.fromCharCode(parseInt(h,16)));
+  if(result!==before1){
+    transformations++;
+    log.push('✅ Giải mã HTML entities');
   }
   
-  // Step 2: Decode decimal escapes (\115\116\114 etc.)
-  if(opts.decodeStr){
-    const before=result;
-    // Match \xxx (1-3 digit decimal) but not inside already processed
-    result=result.replace(/\\(\d{1,3})/g,(m,num)=>{
-      const n=parseInt(num,10);
-      if(n>=32&&n<=126)return String.fromCharCode(n);
-      return m;
-    });
-    if(result!==before){
-      report.transformations++;
-      report.details.push('Decoded \\ddd decimal escapes');
-    }
+  // === Bước 2: Giải mã hex escapes ===
+  const before2=result;
+  result=result.replace(/\\x([0-9a-f]{2})/gi,(m,h)=>String.fromCharCode(parseInt(h,16)));
+  if(result!==before2){
+    transformations++;
+    log.push('✅ Giải mã hex escapes (\\xXX)');
   }
   
-  // Step 3: Resolve string.byte/char patterns
-  if(opts.resolveExpr){
-    const before=result;
-    // string.char(n1,n2,...) or ('string'):byte(i)
-    result=result.replace(/string\.char\s*\(([^)]+)\)/g,(m,args)=>{
-      try{
-        const nums=args.split(',').map(s=>{
-          const t=s.trim();
-          if(!isNaN(t))return parseInt(t,10);
-          return null;
-        });
-        if(nums.some(n=>n===null))return m;
-        const str=nums.map(n=>String.fromCharCode(n)).join('');
-        return '"'+str+'"';
-      }catch(e){return m}
-    });
-    // ('string'):byte(i) or str:byte(i)
-    result=result.replace(/:\s*byte\s*\(\s*(\d+)\s*\)/g,(m,i)=>{
-      // Simplified: can't fully resolve without context
-      return m;
-    });
-    if(result!==before){
-      report.transformations++;
-      report.details.push('Resolved string.char() calls');
-    }
+  // === Bước 3: Giải mã unicode escapes trong string ===
+  const before3=result;
+  result=result.replace(/(?:"[^"]*"|'[^']*'|`[^`]*`)/g,(match)=>{
+    return match.replace(/\\u([0-9a-f]{4})/gi,(m,h)=>String.fromCharCode(parseInt(h,16)));
+  });
+  // Giải mã unicode trong tên biến (tên biến unicode)
+  result=result.replace(/\\u([0-9a-f]{4})/gi,(m,h)=>String.fromCharCode(parseInt(h,16)));
+  if(result!==before3){
+    transformations++;
+    log.push('✅ Giải mã Unicode escapes (\\uXXXX)');
   }
   
-  // Step 4: Rename obfuscated variables (_0x1, _0x2, L0_1, etc.)
-  if(opts.rename){
-    const before=result;
-    const varPattern=/\b(_0x[a-f0-9]+|L\d+_\d+|v\d+_\d+|_0[a-f0-9]{2,})\b/g;
-    const seen=new Map();
-    let counter=0;
-    result=result.replace(varPattern,(m)=>{
-      if(!seen.has(m)){
-        counter++;
-        seen.set(m,'var_'+counter);
+  // === Bước 4: Giải mã packed JS (eval(function(p,a,c,k,e,d)...)) ===
+  // Pattern: eval(function(p,a,c,k,e,d){...}(...))
+  const packedRegex=/eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)[\s\S]*?}\s*\(\s*['"]([\s\S]*?)['"]\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(['"][\s\S]*?['"])\s*\.split\s*\(\s*['"]\|['"]\s*\)\s*(?:,\s*\{[^}]*\}\s*)?,\s*\{\}\s*\)\s*\)/;
+  const packedMatch=result.match(packedRegex);
+  if(packedMatch){
+    try{
+      const payload=packedMatch[1];
+      const a=parseInt(packedMatch[2]);
+      const c=parseInt(packedMatch[3]);
+      const kStr=packedMatch[4];
+      const k=kStr.slice(1,-1).split('|');
+      
+      // Giải mã packed
+      let unpacked='';
+      for(let i=0;i<payload.length;i++){
+        const ch=payload[i];
+        if(/[a-z]/i.test(ch)){
+          const code=ch.charCodeAt(0);
+          const base=ch>='a'?97:65;
+          const idx=code-base;
+          if(idx>=0&&idx<k.length&&k[idx]!=='')unpacked+=k[idx];
+          else unpacked+=ch;
+        }else{
+          unpacked+=ch;
+        }
       }
-      return seen.get(m);
+      
+      if(unpacked&&unpacked!==payload){
+        result=result.replace(packedMatch[0],unpacked);
+        transformations++;
+        log.push('✅ Giải mã packed JS (eval p,a,c,k,e,d)');
+      }
+    }catch(e){
+      log.push('⚠️ Phát hiện packed JS nhưng không giải mã được hoàn toàn');
+    }
+  }
+  
+  // === Bước 5: Giải mã base64 (atob / base64 inline) ===
+  const before5=result;
+  // Xử lý atob() calls
+  result=result.replace(/atob\s*\(\s*['"]([A-Za-z0-9+/=]{10,})['"]\s*\)/g,(m,b64)=>{
+    try{
+      const decoded=atob(b64);
+      if(decoded.length>3)return '"'+decoded+'"';
+      return m;
+    }catch(e){return m}
+  });
+  // Xử lý base64 trong string gán cho biến
+  result=result.replace(/['"]([A-Za-z0-9+/=]{30,})['"]/g,(m,b64)=>{
+    // Chỉ decode nếu có vẻ là base64 thật
+    if(/^[A-Za-z0-9+/]{20,}={0,2}$/.test(b64)){
+      try{
+        const decoded=atob(b64);
+        // Kiểm tra xem decoded có phải text không
+        if(decoded.length>5&&/[a-zA-Z0-9_$(){}\[\]]{10,}/.test(decoded)){
+          return '"'+decoded.replace(/"/g,'\\"')+'"';
+        }
+      }catch(e){}
+    }
+    return m;
+  });
+  if(result!==before5){
+    transformations++;
+    log.push('✅ Giải mã Base64 (atob/inline)');
+  }
+  
+  // === Bước 6: Giải mã ghép chuỗi (concat) ===
+  const before6=result;
+  // Pattern: "a"+"b"+"c" hoặc 'a'+'b'+'c'
+  result=result.replace(/(['"])([^'"]*?)\1\s*\+\s*(['"])([^'"]*?)\3/g,(m,q1,s1,q2,s2)=>{
+    return '"'+s1+s2+'"';
+  });
+  // Lặp lại để ghép chuỗi dài
+  for(let i=0;i<10;i++){
+    const newResult=result.replace(/(['"])([^'"]{2,}?)\1\s*\+\s*(['"])([^'"]*?)\3/g,(m,q1,s1,q2,s2)=>{
+      return '"'+s1+s2+'"';
     });
-    if(result!==before){
-      report.transformations++;
-      report.details.push(`Renamed ${seen.size} obfuscated variables`);
-    }
+    if(newResult===result)break;
+    result=newResult;
+    if(i===0)transformations++;
+  }
+  if(result!==before6){
+    log.push('✅ Giải mã ghép chuỗi (concat)');
   }
   
-  // Step 5: Clean control flow — remove dead/unreachable code after return/break
-  if(opts.cleanFlow){
-    const before=result;
-    // Remove unreachable code after return in blocks
-    result=result.replace(/(\breturn\b[^;\n]*)\n\s*((?:local\s+)?\w+\s*=[^;\n]*\n?)*/g,'$1\n');
-    // Remove empty if true/if false branches
-    result=result.replace(/if\s+true\s+then\s*\n([\s\S]*?)\n\s*end/g,'$1');
-    result=result.replace(/if\s+false\s+then\s*\n[\s\S]*?\n\s*end/g,'');
-    if(result!==before){
-      report.transformations++;
-      report.details.push('Cleaned control flow / dead branches');
-    }
-  }
+  // === Bước 7: Làm đẹp code (beautify cơ bản) ===
+  result=beautifyJS(result);
+  transformations++;
+  log.push('✅ Làm đẹp code (indentation)');
   
-  // Step 6: Remove junk code blocks
-  if(opts.removeJunk){
-    const before=result;
-    // Remove patterns like: local _ = ... (unused underscore vars)
-    result=result.replace(/^\s*local\s+_\s*=\s*[^;\n]+;?\s*$/gm,'');
-    // Remove assignments that look unused (heuristic)
-    result=result.replace(/^\s*local\s+__+\s*=\s*[^;\n]+;?\s*$/gm,'');
-    // Remove empty lines from previous removals
-    result=result.replace(/\n{3,}/g,'\n\n');
-    if(result!==before){
-      report.transformations++;
-      report.details.push('Removed junk/dead code');
-    }
-  }
-  
-  // Step 7: Beautify / normalize indentation
-  result=beautifyLua(result);
-  report.transformations++;
-  report.details.push('Beautified and normalized indentation');
-  
-  // Step 8: Final cleanup
+  // === Bước 8: Dọn dẹp ===
+  result=result.replace(/^\/\/ .+?\n\/\/ /gm,'// ');
   result=result.replace(/[ \t]+$/gm,'').trim();
   if(!result.endsWith('\n'))result+='\n';
   
-  return {code:result,report};
+  return {code:result,transformations,log};
 }
 
-function beautifyLua(code){
+function beautifyJS(code){
   let indent=0;
   const indentStr='  ';
-  let lines=code.split('\n');
-  let result=[];
+  const lines=code.split('\n');
+  const result=[];
+  let inTemplate=false;
   
   for(let i=0;i<lines.length;i++){
     let line=lines[i].trim();
     if(!line){result.push('');continue}
     
-    // Decrease indent for ending keywords
-    if(/^\b(end|until|else|elseif)\b/.test(line)||/^\bend\b/.test(line)){
-      indent=Math.max(0,indent-1);
-    }
-    // Decrease indent for closing braces
-    if(/^\}\)?/.test(line)||/^\}\)?\s*$/.test(line)){
+    // Giảm indent khi gặp đóng block
+    if(/^\}/.test(line)||/^\];/.test(line)){
       indent=Math.max(0,indent-1);
     }
     
     result.push(indentStr.repeat(indent)+line);
     
-    // Increase indent for starting keywords
-    if(/\b(then|do|function\s*\(|function\s+\w+\s*\(|repeat|else)\s*$/.test(line)||
-       /\bif\b/.test(line)&&/\bthen\s*$/.test(line)||
-       /\bfor\b/.test(line)&&/\bdo\s*$/.test(line)||
-       /\bwhile\b/.test(line)&&/\bdo\s*$/.test(line)){
+    // Tăng indent khi mở block
+    if(/\{\s*$/.test(line)||/\{$/.test(line)){
       indent++;
     }
-    // Increase indent for { at end
-    if(/\{\s*$/.test(line)){
+    // if/for/while/function không có { trên cùng dòng
+    if(/\b(if|else|for|while|function|do|try|catch|finally)\b/.test(line)&&
+       !/\{/.test(line)&&!/;\s*$/.test(line)){
       indent++;
     }
-    // Adjust for function definitions
-    if(/^local\s+function\s+\w+|^function\s+\w+/.test(line)&&/\s*\([^)]*\)\s*$/.test(line)){
-      indent++;
+    // case/default trong switch
+    if(/^\s*(case\s.+:|default:)/.test(line)){
+      // case ở indent thấp hơn nội dung
     }
   }
   
   return result.join('\n');
 }
 
-function buildDiffView(original,deobfuscated){
-  const origLines=original.split('\n');
-  const deobLines=deobfuscated.split('\n');
-  const maxLines=Math.max(origLines.length,deobLines.length);
-  let html='<div style="font-family:\'JetBrains Mono\',monospace;font-size:12px;line-height:1.6">';
-  html+='<div style="padding:4px 0 8px;font-size:11px;color:#5a6a7a;border-bottom:1px solid #1e2d42;margin-bottom:8px">';
-  html+=`<span style="color:#ef5350">■ -${origLines.length} lines</span> &nbsp; <span style="color:#00e676">■ +${deobLines.length} lines</span>`;
-  html+='</div>';
-  
-  for(let i=0;i<maxLines;i++){
-    const o=origLines[i]||'';
-    const d=deobLines[i]||'';
-    if(o===d){
-      html+=`<div style="color:#3a4a5a;padding:0 8px"><span style="color:#2a3a5c;width:40px;display:inline-block;text-align:right;margin-right:12px;font-size:10px">${i+1}</span>${escapeHtml(o)}</div>`;
-    }else{
-      if(o)html+=`<div style="background:#ef535011;color:#ef5350;padding:0 8px;border-left:2px solid #ef5350"><span style="color:#ef535066;width:40px;display:inline-block;text-align:right;margin-right:12px;font-size:10px">${i+1}</span>− ${escapeHtml(o)}</div>`;
-      if(d)html+=`<div style="background:#00e67611;color:#00e676;padding:0 8px;border-left:2px solid #00e676"><span style="color:#00e67666;width:40px;display:inline-block;text-align:right;margin-right:12px;font-size:10px">${i+1}</span>+ ${escapeHtml(d)}</div>`;
-    }
-  }
-  html+='</div>';
-  document.getElementById('diffView').innerHTML=html;
-}
-
-function buildReport(report,elapsed){
-  let html='<div style="padding:4px 0">';
-  html+=`<h3 style="color:#4fc3f7;font-size:15px;margin-bottom:12px">📊 Deobfuscation Report</h3>`;
-  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">`;
-  html+=`<div style="background:#0d1117;border:1px solid #1e2d42;border-radius:8px;padding:12px"><div style="font-size:24px;font-weight:700;color:#00e676">${report.transformations}</div><div style="font-size:11px;color:#6b7b8d">Transformations</div></div>`;
-  html+=`<div style="background:#0d1117;border:1px solid #1e2d42;border-radius:8px;padding:12px"><div style="font-size:24px;font-weight:700;color:#4fc3f7">${elapsed}ms</div><div style="font-size:11px;color:#6b7b8d">Processing Time</div></div>`;
-  html+='</div>';
-  
-  if(report.details.length){
-    html+='<div style="font-size:13px;font-weight:600;color:#b0c4de;margin-bottom:8px">Applied Techniques</div>';
-    html+='<div style="display:flex;flex-direction:column;gap:4px">';
-    report.details.forEach((d,i)=>{
-      html+=`<div style="background:#0d1117;border:1px solid #1e2d42;border-radius:6px;padding:8px 12px;font-size:12px;color:#8899aa"><span style="color:#4fc3f7;margin-right:8px">▸</span>${d}</div>`;
-    });
-    html+='</div>';
-  }
-  
-  html+='<div style="margin-top:16px;padding:10px;background:#0d1117;border:1px solid #1e2d42;border-radius:8px;font-size:11px;color:#5a6a7a">';
-  html+='💡 <b>Tips:</b> Toggle options in the toolbar for different deobfuscation passes. Try multiple passes with different settings for complex obfuscation.';
-  html+='</div>';
-  
-  html+='</div>';
-  document.getElementById('reportView').innerHTML=html;
-}
-
-function escapeHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function copyOutput(){
   const text=document.getElementById('outputCode').value;
-  if(!text){showToast('Nothing to copy','error');return}
-  navigator.clipboard.writeText(text).then(()=>{
-    showToast('Copied to clipboard!','success');
-  }).catch(()=>{
-    // Fallback
-    document.getElementById('outputCode').select();
-    document.execCommand('copy');
-    showToast('Copied to clipboard!','success');
-  });
+  if(!text||text.startsWith('// LỖI')){showToast('Không có gì để copy','error');return}
+  navigator.clipboard.writeText(text).then(()=>showToast('✅ Đã copy vào clipboard!','success'))
+    .catch(()=>{document.getElementById('outputCode').select();document.execCommand('copy');showToast('✅ Đã copy!','success');});
 }
 
-// Keyboard shortcuts
+// === Phím tắt ===
 document.addEventListener('keydown',(e)=>{
-  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
-    e.preventDefault();
-    deobfuscate();
-  }
-  if((e.ctrlKey||e.metaKey)&&e.key==='o'){
-    e.preventDefault();
-    document.getElementById('fileInput').click();
-  }
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();deobfuscate();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='o'){e.preventDefault();document.getElementById('fileInput').click();}
 });
-
-// Auto-update input stats on paste
-document.getElementById('inputCode').addEventListener('paste',()=>setTimeout(updateInputStats,50));
-
-console.log('◈ Lua Deobfuscator v2.0 loaded');
-console.log('• Ctrl+Enter: Deobfuscate');
-console.log('• Ctrl+O: Open file');
 </script>
 </body>
-        </html>
+  </html>
